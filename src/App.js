@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Line from './Line'
 import './App.css';
-import { Jumbotron, Button, Dropdown, DropdownButton, Container } from 'react-bootstrap';
+import { Badge,Jumbotron, Button, Dropdown, DropdownButton, Container } from 'react-bootstrap';
 
 class App extends Component {
   constructor(props) {
@@ -9,11 +9,13 @@ class App extends Component {
     this.state = {
       lines: [],
       counter: 0,
-      loading: false
+      loading: {load:false,type:''},
+      isSorted:false
     }
 
     this.bubblesort = this.bubblesort.bind(this);
     this.selectionsort = this.selectionsort.bind(this);
+    this.insertionsort = this.insertionsort.bind(this);
     this.reset = this.reset.bind(this);
     this.shuffle = this.shuffle.bind(this);
 
@@ -32,18 +34,19 @@ class App extends Component {
     this.setState(st => ({
       lines: arr,
       counter: st.counter + 1,
-      loading: true
+      loading: {load:true,type:'Bubble Sort'}
     }))
     if (this.state.counter < arr.length) {
       setTimeout(this.bubblesort, 50);
     } else {
-      this.setState({
-        loading: false
-      })
+      this.setState(st=>({
+        loading:{...st.loading,load:false},
+        isSorted:true
+      }))
     }
   }
 
-
+  // Selection Sort
   selectionsort() {
     let arr = this.state.lines;
     var i = this.state.counter
@@ -63,24 +66,51 @@ class App extends Component {
     this.setState(st => ({
       lines: arr,
       counter: st.counter + 1,
-      loading: true
+      loading: {load:true,type:'Selection Sort'}
     }))
     if (this.state.counter < arr.length) {
       setTimeout(this.selectionsort, 50);
     } else {
-      this.setState({
-        loading: false
-      })
+      this.setState(st=>({
+        loading:{...st.loading,load:false},
+        isSorted:true
+      }))
     }
   }
 
+  // Insertion Sort
+  insertionsort(){
+    let arr = this.state.lines;
+    var i = this.state.counter
+    var currentVal = arr[i];
+    for(var j = i - 1; j >= 0 && arr[j] > currentVal; j--) {
+      arr[j+1] = arr[j]    
+  }
+  arr[j+1] = currentVal;
+
+    this.setState(st => ({
+      lines: arr,
+      counter: st.counter + 1,
+      loading: {load:true,type:'Selection Sort'}
+    }))
+    if (this.state.counter < arr.length) {
+      setTimeout(this.insertionsort, 50);
+    } else {
+      this.setState(st=>({
+        loading:{...st.loading,load:false},
+        isSorted:true
+      }))
+    }
+
+  }
+  //
   componentDidMount() {
     this.reset();
   }
 
   shuffle(array) {
     this.setState(st => ({
-      loading: true
+      loading: {load:true,type:''}
     }))
     var tmp, current, top = array.length;
     if (top) while (--top) {
@@ -98,7 +128,8 @@ class App extends Component {
     this.setState({
       lines: a,
       counter: 0,
-      loading: false
+      loading: {load:false,type:''},
+      isSorted:false
     })
   }
 
@@ -117,13 +148,15 @@ class App extends Component {
             This app allows you to visualize various Sorting Algorithms in real time.
           </p>
           <Dropdown>
-            <DropdownButton disabled={this.state.loading} id="dropdown-basic-button" title="Sort Algorithms">
+            <DropdownButton disabled={this.state.loading.load || this.state.isSorted} id="dropdown-basic-button" title="Sort Algorithms">
               <Dropdown.Item onSelect={this.bubblesort}>Bubble Sort</Dropdown.Item>
               <Dropdown.Item onSelect={this.selectionsort}>Selection Sort</Dropdown.Item>
+              <Dropdown.Item onSelect={this.insertionsort}>Insertion Sort</Dropdown.Item>
             </DropdownButton>
           </Dropdown>
-          <Button variant='primary mt-2' disabled={this.state.loading} onClick={this.reset}>Create new array</Button>       
+          <Button variant='primary mt-2' disabled={this.state.loading.load} onClick={this.reset}>Create new array</Button>       
         </Jumbotron>
+        {(this.state.loading.type !== '')&&(<h1><Badge variant="secondary">{this.state.loading.type}</Badge></h1>)}
         <Container style={{display:'flex',flexDirection:'row',justifyContent:'center',width:'50vh',height:'60vh'}}>
         {lines}
         </Container>
